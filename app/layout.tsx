@@ -1,34 +1,34 @@
-import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-import { Toaster } from "react-hot-toast";
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-import AuthProvider from "@/components/AuthProvider/AuthProvider";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Roboto } from 'next/font/google';
+import './globals.css';
+import TanStackProvider from '@/components/TanStackProvider/TanStackProvider';
+import Header from '@/components/Header/Header';
+import Footer from '@/components/Footer/Footer';
+import React from 'react';
+import AuthProvider from '@/components/AuthProvider/AuthProvider';
 
-const robotoSans = Roboto({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-roboto",
-  display: "swap",
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-roboto',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "NoteHub App",
+  title: 'Note Hub',
   description:
-    "NoteHub is a modern web app to take, organize, and manage your notes with ease.",
+    'NoteHub is a simple and efficient application designed for managing personal notes.',
   openGraph: {
-    title: "NoteHub App",
+    title: 'Note Hub',
     description:
-      "NoteHub is a modern web app to take, organize, and manage your notes with ease.",
-    url: "https://notehub.com",
-    siteName: "NoteHub",
+      'NoteHub is a simple and efficient application designed for managing personal notes.',
+    url: 'https://08-zustand-six-opal.vercel.app/',
     images: [
       {
-        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+        url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
         width: 1200,
         height: 630,
+        alt: 'NoteHub Logo',
       },
     ],
   },
@@ -42,14 +42,17 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${robotoSans.variable}`}>
+    <html lang="en">
+      <body className={`${roboto.variable}`}>
         <TanStackProvider>
           <AuthProvider>
             <Header />
-            {children}
-            {modal}
-            <Toaster position="top-right" />
+
+            <main>
+              {children}
+              {modal}
+            </main>
+
             <Footer />
           </AuthProvider>
         </TanStackProvider>

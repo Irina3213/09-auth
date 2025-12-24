@@ -1,5 +1,13 @@
+export type NoteTag =
+  | 'All'
+  | 'Todo'
+  | 'Work'
+  | 'Personal'
+  | 'Meeting'
+  | 'Shopping';
+
 export interface Note {
-  id: number | string;
+  id: string;
   title: string;
   content: string;
   createdAt: string;
@@ -7,49 +15,13 @@ export interface Note {
   tag: NoteTag;
 }
 
-export type NoteTag =
-  | "Todo"
-  | "Work"
-  | "Personal"
-  | "Meeting"
-  | "Shopping"
-  | "Sport"
-  | "Traveling"
-  | "Events";
-
-export const tags: NoteTag[] = [
-  "Todo",
-  "Work",
-  "Events",
-  "Personal",
-  "Meeting",
-  "Shopping",
-  "Sport",
-  "Traveling",
-];
-
-export interface NewNoteData {
+export interface NewFormNote {
   title: string;
   content: string;
   tag: NoteTag;
 }
 
-export type LoginRequestData = {
-  email: string;
-  password: string;
-};
-
-export type RegisterRequestData = {
-  email: string;
-  password: string;
-};
-
-export type CheckSessionRequest = {
-  success: boolean;
-};
-
-export interface NotesHttpResponse {
-  totalPages: number;
+export interface notesHttpResponse {
   notes: Note[];
-  tag?: string;
+  totalPages: number;
 }

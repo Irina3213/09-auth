@@ -1,47 +1,56 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
-import Modal from "@/components/Modal/Modal";
-import { fetchNoteById } from "@/lib/api/clientApi";
-import { useRouter } from "next/navigation";
-import css from "./NotePreview.module.css";
-
-interface NotePreviewClientProps {
-  id: string;
-}
-
-export default function NotePreviewClient({ id }: NotePreviewClientProps) {
+'use client';
+import css from './NotePreview.module.css';
+import { useParams, useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { fetchNoteById } from '@/lib/api/clientApi';
+import Modal from '@/components/Modal/Modal';
+const NotePreviewClient = () => {
   const router = useRouter();
+
+  const close = () => {
+    router.back();
+  };
+
+  const { id } = useParams<{ id: string }>();
 
   const {
     data: note,
-    isLoading,
     error,
+    isLoading,
   } = useQuery({
-    queryKey: ["note", id],
+    queryKey: ['notes', id],
     queryFn: () => fetchNoteById(id),
     refetchOnMount: false,
   });
-  const handleClose = () => {
-    router.back();
-  };
+
   if (isLoading) return <p>Loading, please wait...</p>;
   if (error || !note) return <p>Something went wrong.</p>;
+
+  const formattedDate = note.updatedAt
+    ? `Updated at: ${note.updatedAt}`
+    : `Created at: ${note.createdAt}`;
+
   return (
-    <Modal onClose={handleClose}>
-      <div className={css.container}>
+    <Modal onClose={close}>
+      <div onClick={(e) => e.stopPropagation()} className={css.container}>
         <div className={css.item}>
-          {" "}
-          <button className={css.backBtn} onClick={handleClose}>
-            Back
-          </button>
           <div className={css.header}>
             <h2>{note.title}</h2>
           </div>
-          <p className={css.tag}>{note.tag}</p>
           <p className={css.content}>{note.content}</p>
-          <p className={css.date}>{note.createdAt}</p>
+          <p className={css.date}>{formattedDate}</p>
+          <span className={css.tag}>{note.tag}</span>
         </div>
+        <button
+          className={css.backBtn}
+          onClick={close}
+          aria-label="Close modal"
+        >
+          Go back
+        </button>
       </div>
     </Modal>
   );
-}
+};
+
+export default NotePreviewClient;

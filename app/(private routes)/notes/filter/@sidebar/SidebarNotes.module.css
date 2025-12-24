@@ -2,8 +2,6 @@
   list-style-type: none;
   margin: 0;
   padding: 0;
-  background-color: #333;
-   height: 200vh;
 }
 
 .menuItem {
@@ -12,10 +10,10 @@
 
 .menuLink {
   text-decoration: none;
-  color:rgb(255, 255, 255);
+  color: white;
   font-size: 16px;
   display: block;
-  padding: 8px 30px;
+  padding: 8px 16px;
   transition: background-color 0.3s ease;
 }
 

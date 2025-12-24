@@ -1,22 +1,34 @@
-import Link from "next/link";
-import {tags} from "@/types/note"
-import css from "./SidebarNotes.module.css";
+import Link from 'next/link';
+import css from './SidebarNotes.module.css';
+import { NoteTag } from '@/types/note';
+// import CreateNote from '../../action/create/page';
+
+const staticTags: NoteTag[] = [
+  'All',
+  'Todo',
+  'Work',
+  'Personal',
+  'Meeting',
+  'Shopping',
+];
 
 const NotesSidebar = async () => {
-
   return (
-    <div>
+    <>
+      <Link className={css.menuLink} href={'/notes/action/create'}>
+        Create note +
+      </Link>
       <ul className={css.menuList}>
-        {/* список тегів */}
-        {tags.map((tag) => (
-          <li key={tag} className={css.menuItem}>
-            <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
-              {tag}
-            </Link>
-          </li>
-        ))}
+        {Array.isArray(staticTags) &&
+          staticTags.map((tag) => (
+            <li key={tag} className={css.menuItem}>
+              <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
+                {tag}
+              </Link>
+            </li>
+          ))}
       </ul>
-    </div>
+    </>
   );
 };
 

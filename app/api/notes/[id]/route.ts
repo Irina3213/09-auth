@@ -9,7 +9,6 @@ type Props = {
 };
 
 export async function GET(request: Request, { params }: Props) {
-
   try {
     const cookieStore = await cookies();
     const { id } = await params;
@@ -28,7 +27,10 @@ export async function GET(request: Request, { params }: Props) {
       );
     }
     logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -52,7 +54,10 @@ export async function DELETE(request: Request, { params }: Props) {
       );
     }
     logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -77,6 +82,9 @@ export async function PATCH(request: Request, { params }: Props) {
       );
     }
     logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }

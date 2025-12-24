@@ -1,95 +1,76 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { editUser, usersMe } from "@/lib/api/clientApi";
-import css from "./EditProfilePage.module.css";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useState } from 'react';
+import css from './EditProfilePage.module.css';
+import Image from 'next/image';
+import { updateMe } from '@/lib/api/clientApi';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/store/authStore';
 
-export default function EditProfile() {
+const EditProfile = () => {
+  const { setUser, user } = useAuthStore();
+  const [username, setUserName] = useState(user?.username ?? '');
+  const [avatar, setAvatar] = useState(user?.avatar ?? '');
+  const [email, setEmail] = useState(user?.email ?? '');
+
   const router = useRouter();
-
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [userImage, setUserImage] = useState("");
-
-  const setUser = useAuthStore((state) => state.setUser);
-  useEffect(() => {
-    // при загрузке страницы получить текущие данные пользователя
-    async function fetchUser() {
-      try {
-        const userData = await usersMe();
-        setUsername(userData.username);
-        setEmail(userData.email);
-        setUserImage(userData.avatar ?? "");
-      } catch (e) {
-        setError("Failed to load user data");
-      }
-    }
-    fetchUser();
-  }, []);
-
-  const handleSaveSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCancel = () => router.push('/profile');
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUserName(event.target.value);
+  };
+  const handleSaveUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await editUser({ username });
-       console.log('User data after edit:', result)
-      setUser(result);
-      router.push("/profile");
-    } catch (error) {
-      setError(String(error));
-    } finally {
-      setLoading(false);
+    const user = await updateMe({
+      username,
+    });
+    if (user) {
+      setUser(user);
+      setUserName(user.username);
+      setAvatar(user?.avatar);
+      setEmail(user?.email);
+      handleCancel();
     }
   };
-
-  const handleCancel = () => {
-    router.push("/profile");
-  };
-
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
 
-        <Image
-          src={userImage || "/profile-photo.png"}
-          alt="User Avatar"
-          width={120}
-          height={120}
-          className={css.avatar}
-        />
+        {avatar && (
+          <Image
+            src={avatar}
+            alt="User Avatar"
+            width={120}
+            height={120}
+            className={css.avatar}
+          />
+        )}
 
-        <form onSubmit={handleSaveSubmit} className={css.profileInfo}>
+        <form className={css.profileInfo} onSubmit={handleSaveUser}>
           <div className={css.usernameWrapper}>
             <label htmlFor="username">Username:</label>
             <input
               id="username"
               type="text"
-              className={css.input}
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={handleChange}
+              className={css.input}
             />
           </div>
 
-          <p>Email: {email}</p>
-
-          {error && <p style={{ color: "red" }}>{error}</p>}
+          <p>
+            <strong>Email: </strong>
+            {email}
+          </p>
 
           <div className={css.actions}>
-            <button type="submit" className={css.saveButton} disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+            <button type="submit" className={css.saveButton}>
+              Save
             </button>
             <button
-              onClick={handleCancel}
               type="button"
               className={css.cancelButton}
+              onClick={handleCancel}
             >
               Cancel
             </button>
@@ -98,4 +79,6 @@ export default function EditProfile() {
       </div>
     </main>
   );
-}
+};
+
+export default EditProfile;

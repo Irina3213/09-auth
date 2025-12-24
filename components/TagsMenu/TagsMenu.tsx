@@ -1,38 +1,39 @@
-"use client";
+'use client';
+import Link from 'next/link';
+import css from './TagsMenu.module.css';
+import { useState } from 'react';
+import { NoteTag } from '@/types/note';
 
-import { useState } from "react";
-import Link from "next/link";
-import css from "@/components/TagsMenu/TagsMenu.module.css";
+const tags: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
 
-type Props = {
-  tags: string[];
-};
-
-export default function TagsMenu({ tags }: Props) {
+const TagsMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
-  
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
     <div className={css.menuContainer}>
-      <button onClick={toggle} className={css.menuButton}>
+      <button className={css.menuButton} onClick={toggleMenu}>
         Notes ▾
       </button>
+
       {isOpen && (
         <ul className={css.menuList}>
-          {/* список тегів */}
           <li className={css.menuItem}>
             <Link
               href={`/notes/filter/All`}
-              onClick={toggle}
               className={css.menuLink}
+              onClick={toggleMenu}
             >
-              All
+              All notes
             </Link>
           </li>
           {tags.map((tag) => (
             <li key={tag} className={css.menuItem}>
-              <Link className={css.menuLink} href={`/notes/filter/${tag}`} onClick={toggle}>
+              <Link
+                href={`/notes/filter/${tag}`}
+                className={css.menuLink}
+                onClick={() => setIsOpen(false)}
+              >
                 {tag}
               </Link>
             </li>
@@ -41,4 +42,6 @@ export default function TagsMenu({ tags }: Props) {
       )}
     </div>
   );
-}
+};
+
+export default TagsMenu;

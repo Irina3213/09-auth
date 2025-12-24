@@ -1,46 +1,41 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { RegisterRequestData } from "@/types/note";
-import { ApiError } from "@/app/api/api";
-import { signUp } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore";
-import css from "./SignUpPage.module.css";
+import { useRouter } from 'next/navigation';
+import css from './SignUpPage.module.css';
+import { useState } from 'react';
+import { register } from '@/lib/api/clientApi';
+import { ApiError } from '@/app/api/api';
+import { useAuthStore } from '@/lib/store/authStore';
+import { RegisterRequest } from '@/types/user';
 
-export default function SignUp() {
+const SignUp = () => {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
-  // Отримуємо метод із стора
   const setUser = useAuthStore((state) => state.setUser);
 
-  const handlerSignUp = async (formData: FormData) => {
+  const handleSubmit = async (formData: FormData) => {
     try {
-      const formValues = Object.fromEntries(formData) as RegisterRequestData;
-      const result = await signUp(formValues);
-
-
-      if (result) {
-        // Записуємо користувача у глобальний стан
-        setUser(result);
-        router.push("/profile");
+      const formValues = Object.fromEntries(formData) as RegisterRequest;
+      const res = await register(formValues);
+      if (res) {
+        setUser(res);
+        router.push('/profile');
       } else {
-        setError("Invalid email or password");
+        setError('Invalid email or password');
       }
     } catch (error) {
       setError(
         (error as ApiError).response?.data?.error ??
           (error as ApiError).message ??
-          "Oops... some error"
+          'Oops... some error'
       );
     }
   };
-
   return (
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
-      <form action={handlerSignUp} className={css.form}>
+      <form className={css.form} action={handleSubmit}>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
@@ -72,4 +67,6 @@ export default function SignUp() {
       </form>
     </main>
   );
-}
+};
+
+export default SignUp;

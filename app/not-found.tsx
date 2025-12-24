@@ -1,31 +1,31 @@
-
-// Варіант 1 з перенаправленням - Вас буде перенаправлено на головну через кілька секунд…
-import type { Metadata } from "next";
-
+import { Metadata } from 'next';
+import css from './Home.module.css';
 
 export const metadata: Metadata = {
-  title: "404 - Page Not Found | NoteHub",
-  description: "The page you're looking for does not exist on NoteHub.",
-    openGraph: {
-    title: "404 - Page Not Found | NoteHub",
-    description: "The page you're looking for does not exist on NoteHub.",
-    url: "https://notehub.com/not-found",
+  title: '404 - Page not found',
+  description: 'NoteHub the page for does not exist',
+  openGraph: {
+    title: '404 - Page not found',
+    description: 'NoteHub the page for does not exist',
+    url: 'https://08-zustand-six-opal.vercel.app/not-found/',
     images: [
-  {
-    url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-    width: 1200,
-    height: 630,
-    alt: "NoteHub 404 Page",
-  },
-],
+      {
+        url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'NoteHub Logo',
+      },
+    ],
   },
 };
 
- const NotFound = () => {
-
+const NotFound = () => {
   return (
     <div>
-      <h1>404 - Сторінку не знайдено</h1>
+      <h1 className={css.title}>404 - Page not found</h1>
+      <p className={css.description}>
+        Sorry, the page you are looking for does not exist.
+      </p>
     </div>
   );
 };

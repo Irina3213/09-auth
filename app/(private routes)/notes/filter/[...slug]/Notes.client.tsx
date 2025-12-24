@@ -1,82 +1,53 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { useDebouncedCallback } from "use-debounce";
-import Pagination from "@/components/Pagination/Pagination";
-import NoteList from "@/components/NoteList/NoteList";
-import SearchBox from "@/components/SearchBox/SearchBox";
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
-import { NoteTag } from "@/types/note";
-import css from "./NotesClient.module.css";
-import Link from "next/link";
-import { NotesHttpResponse } from "@/types/note";
-import { fetchNotes } from "@/lib/api/clientApi";
+import { fetchNotes } from '@/lib/api/clientApi';
+import NoteList from '@/components/NoteList/NoteList';
+import Pagination from '@/components/Pagination/Pagination';
+import SearchBox from '@/components/SearchBox/SearchBox';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
+import css from './Notes.module.css';
+import Link from 'next/link';
 
-type NotesClientProps = {
-  initialData: NotesHttpResponse;
-  tag?: NoteTag | string;
+const NotesClient = ({ tag }: { tag?: string }) => {
+  // Стан для зберігання поточної сторінки
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 12;
+  // Стан для зберігання пошуку
+  const [searchQuery, setSearchQuery] = useState('');
+  const { data } = useQuery({
+    queryKey: ['notes', searchQuery, currentPage, perPage, tag],
+    queryFn: () => fetchNotes(searchQuery, currentPage, perPage, tag),
+    placeholderData: keepPreviousData,
+    refetchOnMount: true,
+  });
+  const { notes = [], totalPages } = data || {};
+
+  const handleSearch = useDebouncedCallback((val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+  }, 300);
+  return (
+    <div className={css.app}>
+      <div className={css.toolbar}>
+        <SearchBox searchQuery={searchQuery} onSearch={handleSearch} />
+        {typeof totalPages === 'number' &&
+          data?.notes &&
+          data.notes.length > 0 && (
+            <Pagination
+              pageCount={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+          )}
+        <Link className={css.link} href={'/notes/action/create'}>
+          Create note +
+        </Link>
+      </div>
+      {notes && <NoteList notes={notes} />}
+    </div>
+  );
 };
 
-export default function NotesClient({ initialData, tag }: NotesClientProps) {
-  // стани (для пошуку searchQuery (стан пошуку))
-  const [inputValue, setInputValue] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const { data, isLoading, error, isError, isSuccess } = useQuery({
-    queryKey: ["notes", tag, inputValue, currentPage],
-    queryFn: () =>
-      fetchNotes({
-        tag: tag && tag !== "All" ? tag : undefined,
-        search: inputValue,
-        page: currentPage,
-        ...(tag !== "All" && { tag }),
-      }),
-    placeholderData: keepPreviousData,
-    initialData,
-  });
-
-  const changeInputValue = useDebouncedCallback((newQuery: string) => {
-    setCurrentPage(1);
-    setInputValue(newQuery);
-  }, 300);
-
-  const totalPages = data?.totalPages ?? 0;
-  const notes = data?.notes ?? [];
-
-  return (
-    <>
-      {}
-      <div className={css.app}>
-        <header className={css.toolbar}>
-          <SearchBox onSearch={changeInputValue} />
-          {isLoading && <Loader />}
-          {isError && (
-            <ErrorMessage
-              message={error instanceof Error ? error.message : "Unknown error"}
-            />
-          )}
-          {isSuccess && totalPages > 1 && (
-            <Pagination
-              page={currentPage}
-              total={totalPages}
-              onChange={setCurrentPage}
-            />
-          )}
-          <Link href="/notes/action/create" className={css.button}>
-            Create note +
-          </Link>
-        </header>
-        {isSuccess && data?.notes?.length === 0 && (
-          <div className={css.emptyState}>
-            <p>No notes found for your request.</p>
-          </div>
-        )}
-        {isSuccess && data?.notes && data?.notes.length > 0 && (
-          <NoteList notes={notes} />
-        )}
-      </div>
-    </>
-  );
-}
+export default NotesClient;

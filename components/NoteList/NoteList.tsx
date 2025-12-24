@@ -1,38 +1,41 @@
-import css from "./NoteList.module.css";
-import type { Note } from "../../types/note";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteNote } from "../../lib/api/clientApi";
-import Link from "next/link";
+'use client';
+import { Note } from '@/types/note';
+import css from './NoteList.module.css';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { deleteNote } from '@/lib/api/clientApi';
+import Link from 'next/link';
 
 interface NoteListProps {
   notes: Note[];
+  onChange?: (note: Note) => void;
 }
 
-export default function NoteList({ notes }: NoteListProps) {
+const NoteList = ({ notes }: NoteListProps) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (noteId: string) => deleteNote(noteId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
     },
   });
 
+  const handleDelete = (noteId: string) => {
+    mutation.mutate(noteId);
+  };
   return (
     <ul className={css.list}>
       {notes.map((note) => (
+        // <NoteItem key={note.id} note={note} />
         <li key={note.id} className={css.listItem}>
           <h2 className={css.title}>{note.title}</h2>
           <p className={css.content}>{note.content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            <Link className={css.tag} href={`/notes/${note.id}`}>
-              View details
-            </Link>
+            <Link href={`/notes/${note.id}`}>View Details</Link>
             <button
-              type="button"
               className={css.button}
-              onClick={() => mutation.mutate(note.id.toString())}
+              onClick={() => handleDelete(note.id)}
             >
               Delete
             </button>
@@ -41,4 +44,6 @@ export default function NoteList({ notes }: NoteListProps) {
       ))}
     </ul>
   );
-}
+};
+
+export default NoteList;

@@ -1,43 +1,41 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { LoginRequestData } from "@/types/note";
-import { signIn } from "@/lib/api/clientApi";
-import { ApiError } from "@/app/api/api";
-import css from "./SignInPage.module.css";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useRouter } from 'next/navigation';
+import css from './SignInPage.module.css';
+import { useState } from 'react';
+import { login } from '@/lib/api/clientApi';
+import { ApiError } from '@/app/api/api';
+import { useAuthStore } from '@/lib/store/authStore';
+import { LoginRequest } from '@/types/user';
 
-export default function SignIn() {
+const SignIn = () => {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
- // Отримуємо метод із стора
- const setUser = useAuthStore((state) => state.setUser);
+  const setUser = useAuthStore((state) => state.setUser);
 
-  const handlerSignIn = async (formData: FormData) => {
+  const handleSubmit = async (formData: FormData) => {
     try {
-      const formValues = Object.fromEntries(formData) as LoginRequestData;
-      const result = await signIn(formValues);
-      if (result) {
-       // Записуємо користувача у глобальний стан
-	      setUser(result);
-        router.push("/profile");
+      const formValues = Object.fromEntries(formData) as LoginRequest;
+      const res = await login(formValues);
+      if (res) {
+        setUser(res);
+        router.push('/profile');
       } else {
-        setError("Invalid email or password");
+        setError('Invalid email or password');
       }
     } catch (error) {
       setError(
         (error as ApiError).response?.data?.error ??
           (error as ApiError).message ??
-          "Oops... some error"
+          'Oops... some error'
       );
     }
   };
 
   return (
     <main className={css.mainContent}>
-      <form action={handlerSignIn} className={css.form}>
+      <form className={css.form} action={handleSubmit}>
         <h1 className={css.formTitle}>Sign in</h1>
 
         <div className={css.formGroup}>
@@ -58,7 +56,6 @@ export default function SignIn() {
             type="password"
             name="password"
             className={css.input}
-            autoComplete="current-password"
             required
           />
         </div>
@@ -68,8 +65,10 @@ export default function SignIn() {
             Log in
           </button>
         </div>
-        { error && <p className={css.error}>{error}</p> }
+        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
-}
+};
+
+export default SignIn;
