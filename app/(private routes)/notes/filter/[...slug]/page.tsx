@@ -1,5 +1,3 @@
-import { fetchNotes } from "@/lib/api/serverApi";
-import { NoteTag } from "@/types/note";
 import {
   dehydrate,
   HydrationBoundary,
@@ -7,65 +5,43 @@ import {
 } from "@tanstack/react-query";
 import NotesClient from "./Notes.client";
 import { Metadata } from "next";
-
-type Category = NoteTag | "All";
-
-interface NotesByCategoryProps {
-  params: { slug: Category[] };
-}
-
-const formatTag = (category?: Category): NoteTag | undefined => {
-  if (!category || category.toLowerCase() === "all") return undefined;
-  return (category.charAt(0).toUpperCase() +
-    category.slice(1).toLowerCase()) as NoteTag;
+import { fetchServerNotes } from "@/lib/api/serverApi";
+type Props = {
+  params: { slug: string[] };
 };
-
-export async function generateMetadata({
-  params,
-}: NotesByCategoryProps): Promise<Metadata> {
-  const { slug } = await params;
-  const category = formatTag(slug?.[0]) ?? "All";
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const slug = params.slug;
+  const filter = slug[0] === "All" ? "All" : slug[0];
   return {
-    title: `Notes categoty: ${category}`,
-    description: `Filtering notes for a category: ${category}`,
+    title: `NoteHub - ${filter} notes`,
+    description: `Page with notes filtred by the tag ${filter}`,
     openGraph: {
-      title: `Notes categoty: ${category}`,
-      description: `Filtering notes for a category: ${category}`,
-      url: `https://notehub.com/notes/filter/${category}`,
+      title: `NoteHub - ${filter} notes`,
+      description: `Page with notes filtred by the tag ${filter}`,
+      url: `https://notehub.versel.app/notes/filter/${filter}`,
       images: [
         {
           url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
           width: 1200,
           height: 630,
-          alt: "Just logo NoteHub",
+          alt: "NoteHub",
         },
       ],
-      type: "article",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `Notes categoty: ${category}`,
-      description: `Filtering notes for a category: ${category}`,
-      images: ["https://ac.goit.global/fullstack/react/og-meta.jpg"],
     },
   };
 }
 
-const NotesByCategory = async ({ params }: NotesByCategoryProps) => {
-  const { slug } = await params;
-  const category = formatTag(slug?.[0]);
+export default async function Notes({ params }: Props) {
+  const slug = params.slug;
+  const filter = slug[0] === "All" ? undefined : slug[0];
   const queryClient = new QueryClient();
-
   await queryClient.prefetchQuery({
-    queryKey: ["notes", "", 1, category],
-    queryFn: () => fetchNotes("", 1, category),
+    queryKey: ["notes", { page: 1, search: "", tag: filter }],
+    queryFn: () => fetchServerNotes(1, "", filter),
   });
-
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient category={category} />
+      <NotesClient filter={filter} />
     </HydrationBoundary>
   );
-};
-
-export default NotesByCategory;
+}

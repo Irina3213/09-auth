@@ -22,20 +22,20 @@ export async function POST() {
 
     return NextResponse.json(
       { message: "Logged out successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     if (isAxiosError(error)) {
       logErrorResponse(error.response?.data);
       return NextResponse.json(
         { error: error.message, response: error.response?.data },
-        { status: error.status }
+        { status: error.status },
       );
     }
     logErrorResponse({ message: (error as Error).message });
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

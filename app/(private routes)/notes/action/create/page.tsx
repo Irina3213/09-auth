@@ -1,29 +1,25 @@
 import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./CreateNote.module.css";
 import { Metadata } from "next";
-
 export const metadata: Metadata = {
-  title: "Create Note | NoteHub",
-  description: "Create a new note in your NoteHub application",
-  metadataBase: new URL("https://notehub.com"),
+  title: "New note",
+  description: "Here you can add a new notes and save it for later reference ",
   openGraph: {
-    title: "Create Note | NoteHub",
-    description: "Create a new note in your NoteHub application",
-    url: "https://notehub.com/notes/action/create",
-    siteName: "NoteHub",
+    title: "New note",
+    description: "Here you can add a new notes and save it for later reference",
+    url: "https://notehub.versel.app/notes/action/create",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
         width: 1200,
         height: 630,
-        alt: "Create Note | NoteHub",
+        alt: "NoteHub",
       },
     ],
-    type: "website",
   },
 };
 
-const CreateNote = () => {
+export default function CreateNote() {
   return (
     <main className={css.main}>
       <div className={css.container}>
@@ -32,6 +28,4 @@ const CreateNote = () => {
       </div>
     </main>
   );
-};
-
-export default CreateNote;
+}

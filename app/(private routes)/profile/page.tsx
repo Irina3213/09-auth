@@ -1,32 +1,31 @@
 import Link from "next/link";
 import css from "./ProfilePage.module.css";
-import { Metadata } from "next";
+import { getServerMe } from "@/lib/api/serverApi";
 import Image from "next/image";
-import { getMe } from "@/lib/api/serverApi";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Profile | NoteHub",
-  description: "See your profile in NoteHub application",
-  metadataBase: new URL("https://notehub.com"),
+  title: "Profile",
+  description:
+    "View and edit your profile information, including username and avatar.",
   openGraph: {
-    title: "Profile | NoteHub",
-    description: "See your profile in NoteHub application",
-    url: "https://notehub.com/profile",
-    siteName: "NoteHub",
+    title: "Profile",
+    description:
+      "View and edit your profile information, including username and avatar.",
+    url: "https://notehub.vercel.app/",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
         width: 1200,
         height: 630,
-        alt: "Profile | NoteHub",
+        alt: "NoteHub",
       },
     ],
-    type: "website",
   },
 };
 
-const Profile = async () => {
-  const user = await getMe();
+export default async function Profile() {
+  const user = await getServerMe();
 
   return (
     <main className={css.mainContent}>
@@ -37,15 +36,17 @@ const Profile = async () => {
             Edit Profile
           </Link>
         </div>
+
         <div className={css.avatarWrapper}>
           <Image
             src={user.avatar}
-            alt="Your avatar"
+            alt={`${user.username}'s Avatar`}
             width={120}
             height={120}
             className={css.avatar}
           />
         </div>
+
         <div className={css.profileInfo}>
           <p>Username: {user.username}</p>
           <p>Email: {user.email}</p>
@@ -53,6 +54,4 @@ const Profile = async () => {
       </div>
     </main>
   );
-};
-
-export default Profile;
+}

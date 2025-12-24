@@ -1,60 +1,32 @@
 "use client";
 
-import { useAuthStore } from "@/lib/stores/authStore";
-import css from "../ProfilePage.module.css";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import css from "./EditProfilePage.module.css";
+import { getMe, updateMe } from "@/lib/api/clientApi";
 import { useRouter } from "next/navigation";
-import { updateMe } from "@/lib/api/clientApi";
-import { Formik, Form, Field, FormikHelpers, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { useId } from "react";
-import toast from "react-hot-toast";
+import Image from "next/image";
+import { useAuthStore } from "@/lib/store/authStore";
 
-const EditProfile = () => {
+export default function Edit() {
   const router = useRouter();
-  const fieldId = useId();
-  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
 
-  interface OrderFormValues {
-    username: string;
-  }
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState("");
 
-  const initialValues: OrderFormValues = {
-    username: user?.username || "",
-  };
+  useEffect(() => {
+    getMe().then((user) => {
+      setUsername(user.username ?? "");
+      setEmail(user.email ?? "");
+      setAvatar(user.avatar ?? "");
+    });
+  }, []);
 
-  const handleSubmit = async (
-    values: OrderFormValues,
-    actions: FormikHelpers<OrderFormValues>
-  ) => {
-    try {
-      if (!user) {
-        toast.error("User not found");
-        return;
-      }
-      await updateMe({
-        email: user.email,
-        username: values.username,
-      });
-      toast.success("Profile updated successfully!");
-      actions.resetForm();
-      router.push("/profile");
-    } catch (error) {
-      toast.error("Failed to update profile");
-      console.error(error);
-    } finally {
-      actions.setSubmitting(false);
-    }
-  };
-
-  const Schema = Yup.object().shape({
-    username: Yup.string()
-      .required("Username is required")
-      .min(3, "It`s too little")
-      .max(50, "It`s too big"),
-  });
-
-  const handleClose = () => {
+  const handleSaveUser = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const updatedUser = await updateMe({ username });
+    setUser(updatedUser);
     router.push("/profile");
   };
 
@@ -62,49 +34,43 @@ const EditProfile = () => {
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
+
         <Image
-          src={user?.avatar || "/NoImage.jpg"}
+          src={avatar || "/default-avatar.png"}
           alt="User Avatar"
           width={120}
           height={120}
           className={css.avatar}
         />
-        <Formik
-          initialValues={initialValues}
-          onSubmit={handleSubmit}
-          validationSchema={Schema}
-        >
-          <Form className={css.profileInfo}>
-            <div className={css.usernameWrapper}>
-              <label htmlFor={`${fieldId}-username`}>Username:</label>
-              <Field
-                name="username"
-                id={`${fieldId}-username`}
-                type="text"
-                className={css.input}
-              />
-              <ErrorMessage name="username" component="span" />
-            </div>
 
-            <p>Email: {user?.email}</p>
+        <form className={css.profileInfo} onSubmit={handleSaveUser}>
+          <div className={css.usernameWrapper}>
+            <label htmlFor="username">Username:</label>
+            <input
+              id="username"
+              value={username}
+              type="text"
+              className={css.input}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
 
-            <div className={css.actions}>
-              <button type="submit" className={css.saveButton}>
-                Save
-              </button>
-              <button
-                type="button"
-                className={css.cancelButton}
-                onClick={handleClose}
-              >
-                Cancel
-              </button>
-            </div>
-          </Form>
-        </Formik>
+          <p>Email: {email}</p>
+
+          <div className={css.actions}>
+            <button type="submit" className={css.saveButton}>
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/profile")}
+              className={css.cancelButton}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </main>
   );
-};
-
-export default EditProfile;
+}

@@ -1,39 +1,38 @@
 "use client";
 
-import { categories } from "@/app/(private routes)/notes/filter/@sidebar/default";
 import { useState } from "react";
-import Link from "next/link";
-
 import css from "./TagsMenu.module.css";
-
-const TagsMenu = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const toggleModal = () => setIsOpen(!isOpen);
-
+import Link from "next/link";
+type Props = {
+  tags: string[];
+};
+export default function TagsMenu({ tags }: Props) {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggle = () => setIsOpen(!isOpen);
   return (
     <div className={css.menuContainer}>
-      <button className={css.menuButton} onClick={toggleModal}>
+      <button onClick={toggle} className={css.menuButton}>
         Notes ▾
       </button>
       {isOpen && (
         <ul className={css.menuList}>
           <li className={css.menuItem}>
             <Link
+              href={`/notes/filter/All`}
               className={css.menuLink}
-              onClick={toggleModal}
-              href="/notes/filter/all"
+              onClick={toggle}
             >
-              All notes
+              All tags
             </Link>
           </li>
-          {categories.map((category, index) => (
-            <li key={index} className={css.menuItem}>
+          {tags.map((tag) => (
+            <li key={tag} className={css.menuItem}>
               <Link
-                href={`/notes/filter/${category}`}
                 className={css.menuLink}
-                onClick={toggleModal}
+                href={`/notes/filter/${tag}`}
+                onClick={toggle}
               >
-                {category}
+                {tag}
               </Link>
             </li>
           ))}
@@ -41,6 +40,4 @@ const TagsMenu = () => {
       )}
     </div>
   );
-};
-
-export default TagsMenu;
+}

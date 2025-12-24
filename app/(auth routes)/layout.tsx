@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface AuthLayoutProps {
+type Props = {
   children: React.ReactNode;
-}
+};
 
-const AuthLayout = ({ children }: AuthLayoutProps) => {
-  const [loading, setLoading] = useState<boolean>(true);
+export default function PublicLayout({ children }: Props) {
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
@@ -18,6 +18,4 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
   }, [router]);
 
   return <>{loading ? <div>Loading...</div> : children}</>;
-};
-
-export default AuthLayout;
+}

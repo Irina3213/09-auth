@@ -1,40 +1,39 @@
 "use client";
 
-import { AuthProps, register } from "@/lib/api/clientApi";
-import css from "./SignUpPage.module.css";
 import { useRouter } from "next/navigation";
+import css from "./SignUpPage.module.css";
 import { useState } from "react";
-import { AxiosError } from "axios";
-import { useAuthStore } from "@/lib/stores/authStore";
-
-const SignUp = () => {
+import { register, RegisterRequest } from "@/lib/api/clientApi";
+import { ApiError } from "@/lib/api/api";
+import { useAuthStore } from "@/lib/store/authStore";
+export default function SignUp() {
   const router = useRouter();
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const setUser = useAuthStore((state) => state.setUser);
-
   const handleSubmit = async (formData: FormData) => {
     try {
-      const formValues = Object.fromEntries(formData) as unknown as AuthProps;
-      const user = await register(formValues);
+      const formValues = Object.fromEntries(formData) as RegisterRequest;
 
-      if (user) {
-        setUser(user);
+      const res = await register(formValues);
+
+      if (res) {
+        setUser(res);
         router.push("/profile");
       } else {
         setError("Invalid email or password");
       }
     } catch (error) {
-      const err = error as AxiosError<{ error?: string }>;
       setError(
-        err.response?.data?.error ?? err.message ?? "Oops... some error"
+        (error as ApiError).response?.data?.error ??
+          (error as ApiError).message ??
+          "Oops... some error",
       );
     }
   };
-
   return (
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
-      <form className={css.form} action={handleSubmit}>
+      <form action={handleSubmit} className={css.form}>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
@@ -62,11 +61,8 @@ const SignUp = () => {
             Register
           </button>
         </div>
-
         {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
-};
-
-export default SignUp;
+}

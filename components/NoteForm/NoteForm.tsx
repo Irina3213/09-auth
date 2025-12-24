@@ -1,31 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { NoteTag } from "@/types/note";
 import css from "./NoteForm.module.css";
 import { useId } from "react";
-import { categories } from "@/app/(private routes)/notes/filter/@sidebar/default";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api/clientApi";
-import toast from "react-hot-toast";
-import { useNoteDraftStore } from "@/lib/stores/noteStore";
+import { useRouter } from "next/navigation";
+import { NewNote } from "@/types/note";
+import { useNoteDraftStore } from "@/lib/store/noteStore";
 
-const NoteForm = () => {
-  interface OrderFormValues {
-    title: string;
-    content: string;
-    tag: NoteTag;
-  }
-
+export default function NoteForm() {
   const router = useRouter();
-  const fieldId = useId();
   const queryClient = useQueryClient();
   const { draft, setDraft, clearDraft } = useNoteDraftStore();
-
   const handleChange = (
     event: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     setDraft({
       ...draft,
@@ -33,26 +24,23 @@ const NoteForm = () => {
     });
   };
 
-  const handleCancel = () => router.push("/notes/filter/all");
-
-  const handleSubmit = (formData: FormData) => {
-    const values = Object.fromEntries(formData) as unknown as OrderFormValues;
-    mutate(values);
-  };
-
   const { mutate } = useMutation({
-    mutationFn: (newNote: OrderFormValues) => createNote(newNote),
+    mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Note created!");
       clearDraft();
-      handleCancel();
+      router.push("/notes/filter/All");
     },
-    onError: (error) => {
-      toast.error("Oops, something went wrong while creating the note.");
-      console.log(`Something went wrong while creating the note: ${error}`);
+    onError: (mutationError: unknown) => {
+      console.log("Failed to create note:", mutationError);
     },
   });
+  const handleSubmit = (formData: FormData) => {
+    const values = Object.fromEntries(formData) as NewNote;
+    mutate(values);
+  };
+  const handleCancel = () => router.push("/notes/filter/All");
+  const fieldId = useId();
 
   return (
     <form action={handleSubmit} className={css.form}>
@@ -89,11 +77,6 @@ const NoteForm = () => {
           defaultValue={draft?.tag}
           onChange={handleChange}
         >
-          {categories.map((category, index) => (
-            <option key={index} value={category}>
-              {category}
-            </option>
-          ))}
           <option value="Todo">Todo</option>
           <option value="Work">Work</option>
           <option value="Personal">Personal</option>
@@ -103,19 +86,17 @@ const NoteForm = () => {
       </div>
 
       <div className={css.actions}>
-        <button
-          onClick={handleCancel}
-          type="button"
-          className={css.cancelButton}
-        >
-          Cancel
-        </button>
         <button type="submit" className={css.submitButton}>
           Create note
+        </button>
+        <button
+          type="button"
+          className={css.submitButton}
+          onClick={handleCancel}
+        >
+          Cancel
         </button>
       </div>
     </form>
   );
-};
-
-export default NoteForm;
+}

@@ -1,43 +1,29 @@
 import { Metadata } from "next";
-import css from "./not-found.module.css";
-
+import css from "./page.module.css";
 export const metadata: Metadata = {
-  title: "404 Page not found | NoteHub",
-  description:
-    "Sorry, the page you are looking for does not exist. Please return to the NoteHub homepage.",
+  title: "Not found page",
+  description: "Not found page for work invalid routers",
   openGraph: {
-    title: "404 Page not found | NoteHub",
-    description:
-      "Sorry, the page you are looking for does not exist. Please return to the NoteHub homepage.",
-    url: "https://notehub.com/not-found",
+    title: "Not found page",
+    description: "Not found page for work invalid routers",
+    url: "https://notehub.versel.app/not-found",
     images: [
       {
-        url: "https://notehub.com/error-404.jpg",
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
         width: 1200,
         height: 630,
-        alt: "404 Page not found | NoteHub",
+        alt: "NoteHub",
       },
     ],
-    type: "article",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `404 Page not found | NoteHub`,
-    description:
-      "Sorry, the page you are looking for does not exist. Please return to the NoteHub homepage.",
-    images: ["https://notehub.com/error-404.jpg"],
   },
 };
-
-const NotFound = () => {
+export default function NotFound() {
   return (
-    <>
+    <div>
       <h1 className={css.title}>404 - Page not found</h1>
       <p className={css.description}>
         Sorry, the page you are looking for does not exist.
       </p>
-    </>
+    </div>
   );
-};
-
-export default NotFound;
+}
