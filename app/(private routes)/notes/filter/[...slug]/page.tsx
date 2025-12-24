@@ -1,73 +1,71 @@
+import { fetchNotes } from "@/lib/api/serverApi";
+import { NoteTag } from "@/types/note";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
-} from '@tanstack/react-query';
-import NotesClient from './Notes.client';
-import { fetchNotes } from '@/lib/api/serverApi';
-import { NoteTag } from '@/types/note';
-import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
+} from "@tanstack/react-query";
+import NotesClient from "./Notes.client";
+import { Metadata } from "next";
 
-const staticTags: NoteTag[] = [
-  'All',
-  'Todo',
-  'Work',
-  'Personal',
-  'Meeting',
-  'Shopping',
-];
-type Props = {
-  params: Promise<{ slug: string[] }>;
+type Category = NoteTag | "All";
+
+interface NotesByCategoryProps {
+  params: { slug: Category[] };
+}
+
+const formatTag = (category?: Category): NoteTag | undefined => {
+  if (!category || category.toLowerCase() === "all") return undefined;
+  return (category.charAt(0).toUpperCase() +
+    category.slice(1).toLowerCase()) as NoteTag;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const tag = resolvedParams.slug?.[0] ?? 'All';
-
-  const isValidTag = tag === 'All' || staticTags.includes(tag as NoteTag);
-  if (!isValidTag) notFound();
+export async function generateMetadata({
+  params,
+}: NotesByCategoryProps): Promise<Metadata> {
+  const { slug } = await params;
+  const category = formatTag(slug?.[0]) ?? "All";
   return {
-    title: `Category: ${tag}`,
-    description: `List of notes for a category ${tag}`,
+    title: `Notes categoty: ${category}`,
+    description: `Filtering notes for a category: ${category}`,
     openGraph: {
-      title: `Category: ${tag}`,
-      description: `NoteHub list of notes for a category ${tag}`,
-      url: `https://08-zustand-six-opal.vercel.app/notes/filter/${tag}`,
+      title: `Notes categoty: ${category}`,
+      description: `Filtering notes for a category: ${category}`,
+      url: `https://notehub.com/notes/filter/${category}`,
       images: [
         {
-          url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
           width: 1200,
           height: 630,
-          alt: 'NoteHub',
+          alt: "Just logo NoteHub",
         },
       ],
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Notes categoty: ${category}`,
+      description: `Filtering notes for a category: ${category}`,
+      images: ["https://ac.goit.global/fullstack/react/og-meta.jpg"],
     },
   };
 }
 
-const NotesPage = async ({ params }: Props) => {
-  const resolvedParams = await params;
-  const tag = resolvedParams.slug?.[0] ?? 'All';
-
-  const isValidTag = tag === 'All' || staticTags.includes(tag as NoteTag);
-  if (!isValidTag) notFound();
-
+const NotesByCategory = async ({ params }: NotesByCategoryProps) => {
+  const { slug } = await params;
+  const category = formatTag(slug?.[0]);
   const queryClient = new QueryClient();
-  const search = '';
-  const page = 1;
-  const perPage = 10;
 
   await queryClient.prefetchQuery({
-    queryKey: ['notes', search, page, perPage, tag],
-    queryFn: () => fetchNotes(search, page, perPage, tag),
+    queryKey: ["notes", "", 1, category],
+    queryFn: () => fetchNotes("", 1, category),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient tag={tag} />
+      <NotesClient category={category} />
     </HydrationBoundary>
   );
 };
 
-export default NotesPage;
+export default NotesByCategory;

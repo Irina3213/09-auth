@@ -1,52 +1,67 @@
-'use client';
+"use client";
 
-import { fetchNotes } from '@/lib/api/clientApi';
-import NoteList from '@/components/NoteList/NoteList';
-import Pagination from '@/components/Pagination/Pagination';
-import SearchBox from '@/components/SearchBox/SearchBox';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
-import css from './Notes.module.css';
-import Link from 'next/link';
+import css from "./Notes.module.css";
 
-const NotesClient = ({ tag }: { tag?: string }) => {
-  // Стан для зберігання поточної сторінки
-  const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 12;
-  // Стан для зберігання пошуку
-  const [searchQuery, setSearchQuery] = useState('');
-  const { data } = useQuery({
-    queryKey: ['notes', searchQuery, currentPage, perPage, tag],
-    queryFn: () => fetchNotes(searchQuery, currentPage, perPage, tag),
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useDebounce } from "use-debounce";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api/clientApi";
+
+import type { NoteTag } from "@/types/note";
+import type { FetchNotesResponse } from "@/lib/api/clientApi";
+
+import toast, { Toaster } from "react-hot-toast";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import Pagination from "@/components/Pagination/Pagination";
+import NoteList from "@/components/NoteList/NoteList";
+
+interface NotesClient {
+  category?: NoteTag | undefined;
+}
+
+const NotesClient = ({ category }: NotesClient) => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const [debounceSearchQuery] = useDebounce(searchQuery, 300);
+
+  const { data, isError, error } = useQuery<FetchNotesResponse>({
+    queryKey: ["notes", debounceSearchQuery, currentPage, category],
+    queryFn: () => fetchNotes(debounceSearchQuery, currentPage, category),
     placeholderData: keepPreviousData,
-    refetchOnMount: true,
   });
-  const { notes = [], totalPages } = data || {};
 
-  const handleSearch = useDebouncedCallback((val: string) => {
-    setSearchQuery(val);
-    setCurrentPage(1);
-  }, 300);
+  useEffect(() => {
+    if (isError && error) {
+      toast.error(`Oops, something went wrong while get the note.`);
+      console.log(`Something went wrong while get the note: ${error}`);
+    }
+  }, [isError, error]);
+
+  const notes = data?.notes ?? [];
+  const totalPages: number = data?.totalPages ?? 1;
+
   return (
-    <div className={css.app}>
-      <div className={css.toolbar}>
-        <SearchBox searchQuery={searchQuery} onSearch={handleSearch} />
-        {typeof totalPages === 'number' &&
-          data?.notes &&
-          data.notes.length > 0 && (
+    <>
+      <div className={css.app}>
+        <Toaster position="top-right" reverseOrder={false} />
+        <header className={css.toolbar}>
+          <SearchBox setSearchQuery={setSearchQuery} />
+          {totalPages > 1 && (
             <Pagination
-              pageCount={totalPages}
+              totalPages={totalPages}
               currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
+              onPageChange={setCurrentPage}
             />
           )}
-        <Link className={css.link} href={'/notes/action/create'}>
-          Create note +
-        </Link>
+          <Link className={css.button} href="/notes/action/create">
+            Create note +
+          </Link>
+        </header>
+        <NoteList notes={notes} />
       </div>
-      {notes && <NoteList notes={notes} />}
-    </div>
+    </>
   );
 };
 

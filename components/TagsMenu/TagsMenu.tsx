@@ -1,40 +1,39 @@
-'use client';
-import Link from 'next/link';
-import css from './TagsMenu.module.css';
-import { useState } from 'react';
-import { NoteTag } from '@/types/note';
+"use client";
 
-const tags: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
+import { categories } from "@/app/(private routes)/notes/filter/@sidebar/default";
+import { useState } from "react";
+import Link from "next/link";
+
+import css from "./TagsMenu.module.css";
 
 const TagsMenu = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const toggleModal = () => setIsOpen(!isOpen);
 
   return (
     <div className={css.menuContainer}>
-      <button className={css.menuButton} onClick={toggleMenu}>
+      <button className={css.menuButton} onClick={toggleModal}>
         Notes ▾
       </button>
-
       {isOpen && (
         <ul className={css.menuList}>
           <li className={css.menuItem}>
             <Link
-              href={`/notes/filter/All`}
               className={css.menuLink}
-              onClick={toggleMenu}
+              onClick={toggleModal}
+              href="/notes/filter/all"
             >
               All notes
             </Link>
           </li>
-          {tags.map((tag) => (
-            <li key={tag} className={css.menuItem}>
+          {categories.map((category, index) => (
+            <li key={index} className={css.menuItem}>
               <Link
-                href={`/notes/filter/${tag}`}
+                href={`/notes/filter/${category}`}
                 className={css.menuLink}
-                onClick={() => setIsOpen(false)}
+                onClick={toggleModal}
               >
-                {tag}
+                {category}
               </Link>
             </li>
           ))}

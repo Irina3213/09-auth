@@ -1,37 +1,36 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import css from './SignUpPage.module.css';
-import { useState } from 'react';
-import { register } from '@/lib/api/clientApi';
-import { ApiError } from '@/app/api/api';
-import { useAuthStore } from '@/lib/store/authStore';
-import { RegisterRequest } from '@/types/user';
+import { AuthProps, register } from "@/lib/api/clientApi";
+import css from "./SignUpPage.module.css";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { AxiosError } from "axios";
+import { useAuthStore } from "@/lib/stores/authStore";
 
 const SignUp = () => {
   const router = useRouter();
-  const [error, setError] = useState('');
-
+  const [error, setError] = useState<string>("");
   const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (formData: FormData) => {
     try {
-      const formValues = Object.fromEntries(formData) as RegisterRequest;
-      const res = await register(formValues);
-      if (res) {
-        setUser(res);
-        router.push('/profile');
+      const formValues = Object.fromEntries(formData) as unknown as AuthProps;
+      const user = await register(formValues);
+
+      if (user) {
+        setUser(user);
+        router.push("/profile");
       } else {
-        setError('Invalid email or password');
+        setError("Invalid email or password");
       }
     } catch (error) {
+      const err = error as AxiosError<{ error?: string }>;
       setError(
-        (error as ApiError).response?.data?.error ??
-          (error as ApiError).message ??
-          'Oops... some error'
+        err.response?.data?.error ?? err.message ?? "Oops... some error"
       );
     }
   };
+
   return (
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
@@ -63,6 +62,7 @@ const SignUp = () => {
             Register
           </button>
         </div>
+
         {error && <p className={css.error}>{error}</p>}
       </form>
     </main>

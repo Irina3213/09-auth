@@ -1,13 +1,12 @@
-'use client';
-import { Note } from '@/types/note';
-import css from './NoteList.module.css';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteNote } from '@/lib/api/clientApi';
-import Link from 'next/link';
+import toast from "react-hot-toast";
+import type { Note } from "../../types/note";
+import css from "./NoteList.module.css";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteNote } from "@/lib/api/clientApi";
+import Link from "next/link";
 
 interface NoteListProps {
   notes: Note[];
-  onChange?: (note: Note) => void;
 }
 
 const NoteList = ({ notes }: NoteListProps) => {
@@ -16,29 +15,34 @@ const NoteList = ({ notes }: NoteListProps) => {
   const mutation = useMutation({
     mutationFn: (noteId: string) => deleteNote(noteId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      toast.success("Note delete!");
+    },
+    onError: (error) => {
+      toast.error("Oops, something went wrong while deleting the note.");
+      console.log(`Something went wrong while deleting the note: ${error}`);
     },
   });
 
   const handleDelete = (noteId: string) => {
     mutation.mutate(noteId);
   };
+
   return (
     <ul className={css.list}>
       {notes.map((note) => (
-        // <NoteItem key={note.id} note={note} />
         <li key={note.id} className={css.listItem}>
           <h2 className={css.title}>{note.title}</h2>
           <p className={css.content}>{note.content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            <Link href={`/notes/${note.id}`}>View Details</Link>
             <button
               className={css.button}
               onClick={() => handleDelete(note.id)}
             >
               Delete
             </button>
+            <Link href={`/notes/${note.id}`}>View details</Link>
           </div>
         </li>
       ))}

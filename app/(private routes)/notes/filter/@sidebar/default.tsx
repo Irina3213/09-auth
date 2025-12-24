@@ -1,35 +1,35 @@
-import Link from 'next/link';
-import css from './SidebarNotes.module.css';
-import { NoteTag } from '@/types/note';
-// import CreateNote from '../../action/create/page';
+import css from "./SidebarNotes.module.css";
+import { NoteTag } from "@/types/note";
+import Link from "next/link";
 
-const staticTags: NoteTag[] = [
-  'All',
-  'Todo',
-  'Work',
-  'Personal',
-  'Meeting',
-  'Shopping',
+export const categories: NoteTag[] = [
+  "Work",
+  "Personal",
+  "Meeting",
+  "Shopping",
+  "Todo",
 ];
 
-const NotesSidebar = async () => {
+const SidebarNotes = () => {
   return (
     <>
-      <Link className={css.menuLink} href={'/notes/action/create'}>
-        Create note +
-      </Link>
+      <Link href="/notes/action/create">Create note +</Link>
       <ul className={css.menuList}>
-        {Array.isArray(staticTags) &&
-          staticTags.map((tag) => (
-            <li key={tag} className={css.menuItem}>
-              <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
-                {tag}
-              </Link>
-            </li>
-          ))}
+        <li className={css.menuItem}>
+          <Link className={css.menuLink} href="/notes/filter/all">
+            All notes
+          </Link>
+        </li>
+        {categories.map((category, index) => (
+          <li className={css.menuItem} key={index}>
+            <Link href={`/notes/filter/${category}`} className={css.menuLink}>
+              {category}
+            </Link>
+          </li>
+        ))}
       </ul>
     </>
   );
 };
 
-export default NotesSidebar;
+export default SidebarNotes;

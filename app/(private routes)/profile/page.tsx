@@ -1,19 +1,33 @@
-import Link from 'next/link';
-import css from './ProfilePage.module.css';
-import { getServerMe } from '@/lib/api/serverApi';
-import Image from 'next/image';
-import { Metadata } from 'next';
+import Link from "next/link";
+import css from "./ProfilePage.module.css";
+import { Metadata } from "next";
+import Image from "next/image";
+import { getMe } from "@/lib/api/serverApi";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const user = await getServerMe();
-  return {
-    title: `${user.username} user profile`,
-    description: 'User profile details page',
-  };
-}
+export const metadata: Metadata = {
+  title: "Profile | NoteHub",
+  description: "See your profile in NoteHub application",
+  metadataBase: new URL("https://notehub.com"),
+  openGraph: {
+    title: "Profile | NoteHub",
+    description: "See your profile in NoteHub application",
+    url: "https://notehub.com/profile",
+    siteName: "NoteHub",
+    images: [
+      {
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Profile | NoteHub",
+      },
+    ],
+    type: "website",
+  },
+};
 
 const Profile = async () => {
-  const user = await getServerMe();
+  const user = await getMe();
+
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
@@ -24,15 +38,13 @@ const Profile = async () => {
           </Link>
         </div>
         <div className={css.avatarWrapper}>
-          {user.avatar && (
-            <Image
-              src={user.avatar}
-              alt="User Avatar"
-              width={120}
-              height={120}
-              className={css.avatar}
-            />
-          )}
+          <Image
+            src={user.avatar}
+            alt="Your avatar"
+            width={120}
+            height={120}
+            className={css.avatar}
+          />
         </div>
         <div className={css.profileInfo}>
           <p>Username: {user.username}</p>
