@@ -1,4 +1,3 @@
-import { instance } from "./api";
 import {
   User,
   RegisterCredentials,
@@ -6,7 +5,12 @@ import {
   UpdateUserDto,
 } from "@/types/user";
 import { Note } from "@/types/note";
+import axios from "axios";
 
+const instance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL + "/api",
+  withCredentials: true,
+});
 // --- AUTH ---
 export const register = async (data: RegisterCredentials): Promise<User> => {
   const res = await instance.post("/auth/register", data);
@@ -33,21 +37,32 @@ export const updateMe = async (data: UpdateUserDto): Promise<User> => {
   return res.data;
 };
 
-// --- NOTES ---
+// --- NOTES TYPES ---
 export interface CreateNoteParams {
   title: string;
   content: string;
   tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
 }
 
+// Структура відповіді від сервера для списку нотаток
+export interface NoteResponse {
+  notes: Note[];
+  total: number;
+  pages: number;
+  page: number;
+}
+
+// --- NOTES METHODS ---
+
 export const createNote = async (data: CreateNoteParams): Promise<Note> => {
   const res = await instance.post("/notes", data);
   return res.data;
 };
 
+// Тільки ОДНЕ оголошення fetchNotes
 export const fetchNotes = async (
   params: { page?: number; search?: string; tag?: string } = {}
-) => {
+): Promise<NoteResponse> => {
   const res = await instance.get("/notes", { params });
   return res.data;
 };
