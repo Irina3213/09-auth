@@ -43,3 +43,19 @@ export const fetchNoteById = async (
   });
   return res.data;
 };
+export const fetchServerNotes = async (
+  {
+    page = 1,
+    search = "",
+    tag,
+  }: { page?: number; search?: string; tag?: string },
+  cookie: string
+) => {
+  const res = await serverInstance.get("/notes", {
+    params: { page, search, tag },
+    headers: {
+      Cookie: cookie,
+    },
+  });
+  return res.data;
+};

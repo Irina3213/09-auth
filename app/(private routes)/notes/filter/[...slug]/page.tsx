@@ -1,7 +1,12 @@
 import NoteListClient from "./Notes.client";
-import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import {
+  QueryClient,
+  HydrationBoundary,
+  dehydrate,
+} from "@tanstack/react-query";
 import { fetchServerNotes } from "@/lib/api/serverApi";
 import { Metadata } from "next";
+import { cookies } from "next/headers";
 
 type Props = {
   params: Promise<{ slug: string[] }>; // ✅ params — Promise
@@ -37,14 +42,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function App({ params }: Props) {
-  const { slug } = await params; // ✅ чекаємо на Promise
+  const { slug } = await params;
   const tag = slug[0] === "All" ? undefined : slug[0];
 
   const queryClient = new QueryClient();
+  const cookieStore = await cookies(); // Отримуємо куки
 
   await queryClient.prefetchQuery({
     queryKey: ["notes", { query: "", page: 1, tag }],
-    queryFn: () => fetchServerNotes(1, "", tag),
+    // Передаємо об'єкт { page, search, tag } та рядок кук
+    queryFn: () =>
+      fetchServerNotes({ page: 1, search: "", tag }, cookieStore.toString()),
   });
 
   return (
