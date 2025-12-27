@@ -1,21 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 type Props = {
   children: React.ReactNode;
 };
 
 export default function PublicLayout({ children }: Props) {
-  const [loading, setLoading] = useState(true);
-
-  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    router.refresh();
-    setLoading(false);
-  }, [router]);
+    const handle = requestAnimationFrame(() => {
+      setIsMounted(true);
+    });
+    return () => cancelAnimationFrame(handle);
+  }, []);
 
-  return <>{loading ? <div>Loading...</div> : children}</>;
+  // Це запобігає розбіжностям між сервером і клієнтом (Hydration Error)
+  if (!isMounted) {
+    return null; // Або <div>Loading...</div>
+  }
+
+  return <>{children}</>;
 }

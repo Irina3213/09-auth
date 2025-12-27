@@ -10,8 +10,11 @@ type Props = {
   params: { slug: string[] };
 };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const slug = params.slug;
-  const filter = slug[0] === "All" ? "All" : slug[0];
+  const resolvedParams = await params; // Обов'язково додаємо await
+  const slug = resolvedParams.slug;
+
+  const filter = slug && slug[0] === "All" ? "All" : slug ? slug[0] : "All";
+
   return {
     title: `NoteHub - ${filter} notes`,
     description: `Page with notes filtred by the tag ${filter}`,
@@ -32,8 +35,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Notes({ params }: Props) {
-  const slug = params.slug;
-  const filter = slug[0] === "All" ? undefined : slug[0];
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
+
+  const filter =
+    slug && slug[0] === "All" ? undefined : slug ? slug[0] : undefined;
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
     queryKey: ["notes", { page: 1, search: "", tag: filter }],
