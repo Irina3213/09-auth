@@ -5,7 +5,7 @@ import {
   LoginCredentials,
   UpdateUserDto,
 } from "@/types/user"; // Переконайтеся, що шлях правильний
-import { Note, CreateNoteDto } from "@/types/note";
+// import { CreateNoteDto } from "@/types/note";
 
 // Функція реєстрації
 export const register = async (data: RegisterCredentials): Promise<User> => {
@@ -29,7 +29,12 @@ export const updateMe = async (data: UpdateUserDto): Promise<User> => {
   const res = await instance.patch("/users/me", data);
   return res.data;
 };
-export const createNote = async (data: CreateNoteDto): Promise<Note> => {
+export interface CreateNoteParams {
+  title: string;
+  content: string;
+  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+}
+export const createNote = async (data: CreateNoteParams) => {
   const res = await instance.post("/notes", data);
   return res.data;
 };
