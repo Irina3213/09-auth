@@ -1,8 +1,7 @@
 export interface User {
-  id: string;
   email: string;
   username: string;
-  avatar: string | null;
+  avatar: string;
 }
 
 export interface RegisterCredentials {
@@ -14,4 +13,10 @@ export interface RegisterCredentials {
 export interface LoginCredentials {
   email: string;
   password: string;
+}
+export interface UpdateUserDto {
+  username?: string;
+  email?: string;
+  avatar?: string;
+  password?: string;
 }
