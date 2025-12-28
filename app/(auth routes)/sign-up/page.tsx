@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios"; // Імпортуємо axios для обробки помилок
+import axios from "axios";
 import { register } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
-import { RegisterCredentials } from "@/types/user"; // Імпортуємо тип
+import { RegisterCredentials } from "@/types/user";
 import css from "./SignUp.module.css";
 
 export default function SignUpPage() {
@@ -19,10 +19,11 @@ export default function SignUpPage() {
 
     const formData = new FormData(e.currentTarget);
 
-    // Створюємо об'єкт, який точно відповідає інтерфейсу RegisterCredentials
+    // ✅ ВИПРАВЛЕНО: Додано username, щоб відповідати інтерфейсу RegisterCredentials
     const credentials: RegisterCredentials = {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
+      username: formData.get("username") as string,
     };
 
     try {
@@ -30,7 +31,6 @@ export default function SignUpPage() {
       setUser(user);
       router.push("/profile");
     } catch (err: unknown) {
-      // Виправляємо помилку err: any за допомогою перевірки типу axios
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || "Registration failed");
       } else {
@@ -43,6 +43,18 @@ export default function SignUpPage() {
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
       <form className={css.form} onSubmit={handleSubmit}>
+        {/* ✅ ДОДАНО: Поле для введення Username */}
+        <div className={css.formGroup}>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            name="username"
+            className={css.input}
+            required
+          />
+        </div>
+
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
