@@ -44,7 +44,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function App({ params }: Props) {
   const { slug } = await params;
-  
   const tag = slug[0] === "All" ? undefined : slug[0];
 
   const queryClient = new QueryClient();
@@ -63,4 +62,3 @@ export default async function App({ params }: Props) {
     </div>
   );
 }
-

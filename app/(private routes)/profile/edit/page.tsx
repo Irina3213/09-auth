@@ -39,7 +39,8 @@ export default function EditProfilePage() {
         <h1 className={css.formTitle}>Edit Profile</h1>
 
         <Image
-          src={user.avatar}
+          // ✅ ВИПРАВЛЕНО: Додано оператор || для обробки null значення аватара
+          src={user.avatar || "/default-avatar.png"}
           alt="User Avatar"
           width={120}
           height={120}
