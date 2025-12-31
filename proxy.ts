@@ -4,11 +4,17 @@ import { checkSession } from "./lib/api/serverApi";
 
 const privateRoutes = ["/profile", "/notes"];
 const authRoutes = ["/sign-in", "/sign-up"];
+const BACKEND_URL = "https://auth-backend-production-c662.up.railway.app";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Отримуємо токени з кукі запиту для перевірки стану
+  if (pathname.startsWith("/auth") || pathname.startsWith("/api")) {
+    const targetUrl = new URL(pathname + request.nextUrl.search, BACKEND_URL);
+    return NextResponse.rewrite(targetUrl);
+  }
+  // --------------------------------------------
+
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
@@ -20,25 +26,19 @@ export async function proxy(request: NextRequest) {
   let isAuthenticated = !!accessToken;
   let sessionResponse: Response | null = null;
 
-  // 1. Спроба поновлення сесії, якщо access-токен відсутній
   if (!accessToken && refreshToken) {
     try {
       const res = await checkSession();
       sessionResponse = res as unknown as Response;
-
       if (sessionResponse && sessionResponse.ok) {
         isAuthenticated = true;
-      } else {
-        isAuthenticated = false;
       }
     } catch {
       isAuthenticated = false;
     }
   }
 
-  // 2. Логіка редиректів
   let response: NextResponse;
-
   if (isPrivateRoute && !isAuthenticated) {
     response = NextResponse.redirect(new URL("/sign-in", request.url));
   } else if (isAuthRoute && isAuthenticated) {
@@ -58,5 +58,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/profile/:path*", "/notes/:path*", "/sign-in", "/sign-up"],
+  matcher: [
+    "/profile/:path*",
+    "/notes/:path*",
+    "/sign-in",
+    "/sign-up",
+    "/auth/:path*",
+    "/api/:path*",
+  ],
 };
