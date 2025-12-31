@@ -19,7 +19,6 @@ export default function SignUpPage() {
 
     const formData = new FormData(e.currentTarget);
 
-    // ✅ ВИПРАВЛЕНО: Додано username, щоб відповідати інтерфейсу RegisterCredentials
     const credentials: RegisterCredentials = {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
@@ -43,7 +42,6 @@ export default function SignUpPage() {
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
       <form className={css.form} onSubmit={handleSubmit}>
-        {/* ✅ ДОДАНО: Поле для введення Username */}
         <div className={css.formGroup}>
           <label htmlFor="username">Username</label>
           <input

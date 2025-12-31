@@ -19,18 +19,18 @@ export async function proxy(request: NextRequest) {
   let isAuthenticated = !!accessToken;
   let sessionResponse: Response | null = null;
 
-  // 1. Спроба оновлення сесії
+  // 1. Логіка поновлення сесії
   if (!accessToken && refreshToken) {
     try {
-      sessionResponse = (await checkSession()) as unknown as Response;
+      const res = await checkSession();
+      sessionResponse = res as unknown as Response;
 
       if (sessionResponse && sessionResponse.ok) {
         isAuthenticated = true;
       } else {
         isAuthenticated = false;
       }
-    } catch (error) {
-      console.error("Session refresh failed:", error);
+    } catch {
       isAuthenticated = false;
     }
   }
