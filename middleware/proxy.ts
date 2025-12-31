@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { checkSession } from "./lib/api/serverApi";
+import { checkSession } from "../lib/api/serverApi"; // Змінили шлях на ../
 
+const BACKEND_URL = "https://auth-backend-production-c662.up.railway.app";
 const privateRoutes = ["/profile", "/notes"];
 const authRoutes = ["/sign-in", "/sign-up"];
-const BACKEND_URL = "https://auth-backend-production-c662.up.railway.app";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. ПРОКСІ-ЛОГІКА
+  // 1. Проксіювання (Rewrite)
   if (pathname.startsWith("/auth") || pathname.startsWith("/api")) {
     const targetUrl = new URL(pathname + request.nextUrl.search, BACKEND_URL);
     return NextResponse.rewrite(targetUrl);
@@ -17,7 +17,6 @@ export async function proxy(request: NextRequest) {
 
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
-
   const isPrivateRoute = privateRoutes.some((route) =>
     pathname.startsWith(route)
   );
@@ -26,26 +25,17 @@ export async function proxy(request: NextRequest) {
   let isAuthenticated = !!accessToken;
   let sessionResponse: Response | null = null;
 
-  // 2. ОНОВЛЕННЯ СЕСІЇ
   if (!accessToken && refreshToken) {
     try {
-      // Використовуємо checkSession як Response
       const res = await checkSession();
       sessionResponse = res as unknown as Response;
-
-      if (sessionResponse && sessionResponse.ok) {
-        isAuthenticated = true;
-      } else {
-        isAuthenticated = false;
-      }
+      if (sessionResponse && sessionResponse.ok) isAuthenticated = true;
     } catch {
       isAuthenticated = false;
     }
   }
 
-  // 3. ВИЗНАЧЕННЯ ВІДПОВІДІ (Redirect або Next)
   let response: NextResponse;
-
   if (isPrivateRoute && !isAuthenticated) {
     response = NextResponse.redirect(new URL("/sign-in", request.url));
   } else if (isAuthRoute && isAuthenticated) {
@@ -54,24 +44,11 @@ export async function proxy(request: NextRequest) {
     response = NextResponse.next();
   }
 
-  // 4. ЯВНЕ КОПІЮВАННЯ SET-COOKIE (Вимога ментора №2)
+  // Явне копіювання заголовків (Вимога ментора)
   if (sessionResponse) {
     const setCookie = sessionResponse.headers.get("set-cookie");
-    if (setCookie) {
-      response.headers.set("set-cookie", setCookie);
-    }
+    if (setCookie) response.headers.set("set-cookie", setCookie);
   }
 
   return response;
 }
-
-export const config = {
-  matcher: [
-    "/profile/:path*",
-    "/notes/:path*",
-    "/sign-in",
-    "/sign-up",
-    "/auth/:path*",
-    "/api/:path*",
-  ],
-};
