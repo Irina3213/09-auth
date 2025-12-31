@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { cookies } from "next/headers";
 import { checkSession } from "./lib/api/serverApi";
 
 const privateRoutes = ["/profile", "/notes"];
@@ -9,10 +8,8 @@ const authRoutes = ["/sign-in", "/sign-up"];
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Отримуємо початкові токени
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken")?.value;
-  const refreshToken = cookieStore.get("refreshToken")?.value;
+  const accessToken = request.cookies.get("accessToken")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
 
   const isPrivateRoute = privateRoutes.some((route) =>
     pathname.startsWith(route)
@@ -20,13 +17,14 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   let isAuthenticated = !!accessToken;
+  let sessionResponse: Response | null = null;
 
-  // 2. Спроба оновлення сесії
+  // 1. Спроба оновлення сесії
   if (!accessToken && refreshToken) {
     try {
-      const user = await checkSession();
+      sessionResponse = (await checkSession()) as unknown as Response;
 
-      if (user) {
+      if (sessionResponse && sessionResponse.ok) {
         isAuthenticated = true;
       } else {
         isAuthenticated = false;
@@ -47,16 +45,10 @@ export async function proxy(request: NextRequest) {
     response = NextResponse.next();
   }
 
-  if (!accessToken && isAuthenticated) {
-    const updatedCookieStore = await cookies();
-    const newAccess = updatedCookieStore.get("accessToken")?.value;
-    const newRefresh = updatedCookieStore.get("refreshToken")?.value;
-
-    if (newAccess) {
-      response.cookies.set("accessToken", newAccess);
-    }
-    if (newRefresh) {
-      response.cookies.set("refreshToken", newRefresh);
+  if (sessionResponse) {
+    const setCookie = sessionResponse.headers.get("set-cookie");
+    if (setCookie) {
+      response.headers.set("set-cookie", setCookie);
     }
   }
 
