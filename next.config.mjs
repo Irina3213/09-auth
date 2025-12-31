@@ -1,10 +1,9 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  // Додано типізацію тут
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   async rewrites() {
     return [
       {
+        // Це виправляє помилку 404, перенаправляючи запити на бекенд
         source: "/auth/:path*",
         destination:
           "https://auth-backend-production-c662.up.railway.app/auth/:path*",

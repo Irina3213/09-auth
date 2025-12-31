@@ -8,6 +8,7 @@ const authRoutes = ["/sign-in", "/sign-up"];
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Отримуємо токени з кукі запиту для перевірки стану
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
@@ -19,7 +20,7 @@ export async function proxy(request: NextRequest) {
   let isAuthenticated = !!accessToken;
   let sessionResponse: Response | null = null;
 
-  // 1. Логіка поновлення сесії
+  // 1. Спроба поновлення сесії, якщо access-токен відсутній
   if (!accessToken && refreshToken) {
     try {
       const res = await checkSession();
@@ -35,6 +36,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // 2. Логіка редиректів
   let response: NextResponse;
 
   if (isPrivateRoute && !isAuthenticated) {
