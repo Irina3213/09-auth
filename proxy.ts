@@ -9,7 +9,8 @@ const BACKEND_URL = "https://auth-backend-production-c662.up.railway.app";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. ПРОКСІЮВАННЯ: Виправляємо 404 для запитів до бекенду
+  // --- 1. ВИПРАВЛЕННЯ 404: ПРОКСІЮВАННЯ НА БЕКЕНД ---
+
   if (pathname.startsWith("/auth") || pathname.startsWith("/api")) {
     const targetUrl = new URL(pathname + request.nextUrl.search, BACKEND_URL);
     return NextResponse.rewrite(targetUrl);
@@ -26,7 +27,7 @@ export async function proxy(request: NextRequest) {
   let isAuthenticated = !!accessToken;
   let sessionResponse: Response | null = null;
 
-  // 2. ПОНОВЛЕННЯ СЕСІЇ
+  // --- 2. ПОНОВЛЕННЯ СЕСІЇ
   if (!accessToken && refreshToken) {
     try {
       const res = await checkSession();
@@ -42,7 +43,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // 3. РЕДИРЕКТИ
+  // --- 3. ЛОГІКА РЕДИРЕКТІВ ---
   let response: NextResponse;
 
   if (isPrivateRoute && !isAuthenticated) {
@@ -53,6 +54,7 @@ export async function proxy(request: NextRequest) {
     response = NextResponse.next();
   }
 
+  // --- 4. ЯВНЕ ВСТАНОВЛЕННЯ КУКІВ
   if (sessionResponse) {
     const setCookie = sessionResponse.headers.get("set-cookie");
     if (setCookie) {
